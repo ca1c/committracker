@@ -1,0 +1,16 @@
+The way this will work is that the user will send a command
+in a discord channel to set up a repository.
+
+The bot will provide a link with a code at the end that you have to paste in the webhooks
+of the github repository.
+
+The code at the end will be the id of that repository set up in 
+the database
+
+when the user calls the set up command the bot will record
+the channel it should be posting the updates in and the id
+of the discord server
+
+when github makes requests to this url through webhooks it will
+find that repository in its database, and post the update in the
+designated channel on the designated server.
