@@ -2,6 +2,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 require('dotenv').config();
+const express = require('express');
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const Repo = require('./Models/Repo');
 
 // Create a new client instance
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -31,6 +35,41 @@ for(const folder of commandFolders) {
 // It makes some properties non-nullable.
 client.once(Events.ClientReady, readyClient => {
 	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
+
+    const app = express();
+    const port = 3000;
+
+    app.use(bodyParser.json());
+
+    app.get("/", (req, res) => {
+        res.send("connected");
+    })
+
+    app.post('/webhook/:repoId', async (req, res) => {
+        const repoId = req.params.repoId;
+        const payload = req.body;
+        const repo = await Repo.findOne({_id: repoId});
+
+        if(!repo) {
+            res.status(500).end();
+            return;
+        }
+        
+        const targetChannel = client.channels.cache.get(repo.channelId);
+        console.log(targetChannel);
+        
+
+        if(payload && targetChannel) {
+            console.log(payload);
+            targetChannel.send("commit received!");
+        }
+
+        res.status(200).end();
+    })
+
+    app.listen(port, () => {
+        console.log(`Server is listening on port ${port}`);
+    })
 });
 
 client.on(Events.InteractionCreate, async interaction => {
@@ -56,6 +95,19 @@ client.on(Events.InteractionCreate, async interaction => {
 
     console.log(interaction);
 })
+
+
+// Mongoose stuff
+
+main().catch(err => console.log(err));
+
+async function main() {
+    await mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.9csfneq.mongodb.net/?retryWrites=true&w=majority`);
+}
+
+
+//Express stuff
+
 
 // Log in to Discord with your client's token
 client.login(process.env.DISCORD_TOKEN);
