@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
+const { Client, Collection, Events, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -61,7 +61,17 @@ client.once(Events.ClientReady, readyClient => {
 
         if(payload && targetChannel) {
             console.log(payload);
-            targetChannel.send("commit received!");
+
+            const commitEmbed = new EmbedBuilder()
+            .setColor(0x0099FF)
+            .setTitle(`Commit: ${payload['commits'][0].id}`)
+            .setURL(`${payload['commits'][0].url}`)
+            .setAuthor({ name: payload['sender'].login, iconURL: payload['sender'].avatar_url, url: payload['sender'].html_url })
+            .setDescription(payload['commits'][0].message)
+            .setTimestamp()
+            .setFooter({ text: 'Commit Received:'});
+
+            targetChannel.send({embeds: [commitEmbed]});
         }
 
         res.status(200).end();
