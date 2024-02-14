@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const Repo = require('../../Models/Repo');
+const http = require('http');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -31,6 +32,29 @@ module.exports = {
             console.error("Couldn't save new repo entry");
         }
 
-        await interaction.reply(`Paste This Link: https://localhost:3000/webhook/${NewRepo._id}, in your github webhooks to start tracking`);
+        const options = {
+          host: 'api.ipify.org',
+          port: 80,
+          path: '/?format=json'
+        };
+
+        const req = http.request(options, (res) => {
+          res.setEncoding('utf8');
+
+          let body = '';
+          res.on('data', (chunk) => {
+            body += chunk;
+          });
+
+          // When the response completes, parse the JSON and log the IP address
+          res.on('end', async () => {
+            const data = JSON.parse(body);
+
+            await interaction.reply(`Paste This Link: http://${data.ip}:${process.env.PORT}/webhook/${NewRepo._id}, in your github webhooks to start tracking`);
+          });
+        });
+
+        // Send the request
+        req.end();
     }
 };

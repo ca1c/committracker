@@ -37,7 +37,7 @@ client.once(Events.ClientReady, readyClient => {
 	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
 
     const app = express();
-    const port = 3000;
+    const port = process.env.PORT;
 
     app.use(bodyParser.json());
 
@@ -114,10 +114,6 @@ main().catch(err => console.log(err));
 async function main() {
     await mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.9csfneq.mongodb.net/?retryWrites=true&w=majority`);
 }
-
-
-//Express stuff
-
 
 // Log in to Discord with your client's token
 client.login(process.env.DISCORD_TOKEN);
