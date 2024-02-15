@@ -6,6 +6,20 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const Repo = require('./Models/Repo');
+const http = require('http');
+
+// Initialize serverip.json
+const rootPath = path.resolve(__dirname, 'serverip.json');
+const initConfig = {
+    ip: ""
+};
+const initConfigString = JSON.stringify(initConfig);
+fs.writeFile(rootPath, initConfigString, function(err) {
+    if(err) {
+        console.error(err);
+    }
+    console.log("serverip.json initialized");
+});
 
 // Create a new client instance
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -77,9 +91,54 @@ client.once(Events.ClientReady, readyClient => {
         res.status(200).end();
     })
 
+
+
     app.listen(port, () => {
         console.log(`Server is listening on port ${port}`);
     })
+
+    let min = 5;
+    let interval = min * 60 * 1000;
+
+    setInterval(function() {
+        const options = {
+            host: 'api.ipify.org',
+            port: 80,
+            path: '/?format=json'
+        };
+  
+        const req = http.request(options, (res) => {
+            res.setEncoding('utf8');
+
+            let body = '';
+            res.on('data', (chunk) => {
+                body += chunk;
+            });
+
+            // When the response completes, parse the JSON and log the IP address
+            res.on('end', () => {
+                const data = JSON.parse(body);
+
+                const serveripContents = fs.readFileSync(path.resolve(__dirname, 'serverip.json')).toString();
+                const serveripObject = JSON.parse(serveripContents);
+
+                if(serveripObject.ip !== data.ip) {
+                    const newserverip = {
+                        ip: data.ip
+                    }
+                    newserveripString = JSON.stringify(newserverip);
+                    fs.writeFileSync(path.resolve(__dirname, 'serverip.json'), newserveripString);
+
+                    const targetChannel = client.channels.cache.get(process.env.SERVER_IP_UPDATE_CHANNEL);
+                    targetChannel.send(`new server ip: ${data.ip}`);
+                }
+
+                console.log(data.ip);
+            });
+        });
+
+        req.end();
+    }, interval);
 });
 
 client.on(Events.InteractionCreate, async interaction => {
