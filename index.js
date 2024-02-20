@@ -131,6 +131,8 @@ client.once(Events.ClientReady, readyClient => {
 
                     const targetChannel = client.channels.cache.get(process.env.SERVER_IP_UPDATE_CHANNEL);
                     targetChannel.send(`new server ip: ${data.ip}`);
+
+                    // TODO: Update github webhooks for all repositories
                 }
 
                 console.log(data.ip);

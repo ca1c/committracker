@@ -14,3 +14,21 @@ of the discord server
 when github makes requests to this url through webhooks it will
 find that repository in its database, and post the update in the
 designated channel on the designated server.
+
+=================================
+            2/20/24
+=================================
+
+For this part, we are adressing the fact that the ip of the server is
+dynamic and the problem this causes with github webhooks
+
+since the original webhook is given with a single ip the ip of the url
+would need to be updated every time it changes
+
+In order to do that we can use the github api, by using the github api, we can
+give the bot access to the repository properties and use it to change the webhooks
+every time the ip changes
+
+The code to figure out if the ip has changed has already been written
+
+For github api reference: https://docs.github.com/en/rest/repos/webhooks?apiVersion=2022-11-28#create-a-repository-webhook
